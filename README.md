@@ -24,6 +24,10 @@ Key features:
    git clone https://github.com/YOUR_USERNAME/elevator-system.git
    cd elevator-system
 
+2. Compile the program using a C++ compiler (e.g., g++):
+   ```bash
+   g++ main.cpp -o elevator
+
 ---
 
 ## 3. How to Run the Code
@@ -40,6 +44,9 @@ You’ll see a menu with the following options:
  ---
  
  ## 4. Usage Example
+ Granted Access Example:
+
+```markdown
 
 Input:
 
@@ -58,7 +65,26 @@ History output:
 
 Request History:
 Sarah -> Floor 3 at 7:30 Minute: 30
+```
+Denied Access Example:
+```markdown
 
+1. Add Request  
+Name: Alex  
+From floor: 2  
+To floor: 5 (e.g., Gym)  
+Hour: 3  
+
+Processing:  
+Processing: Alex from 2 to 5 at 3:00  
+Access denied. Floor is closed at this time.
+
+History output:
+
+Request History:  
+Sarah -> Floor 3 at 7:30 Minute: 30  
+Alex -> Floor 5 at 3:00 Minute: 0 (Denied)
+```
 ---
 
 ## 5. Notes
