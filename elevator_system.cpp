@@ -2,58 +2,57 @@
 #include <string>
 using namespace std;
 
-// Structure representing a user's elevator request
+// Structure to store elevator request details
 struct Request {
-    string name;       // Name of the user making the request
-    int from, to;      // Starting floor and destination floor
-    int hour, minute;  // Time the request was made
-    Request* next;     // Pointer to the next request (for linked list)
+    int number;       // Unique request number
+    int from, to;     // Origin and destination floors
+    int hour, minute; // Request time (24-hour format)
+    Request* next;    // Pointer to the next request in a linked list
 };
 
-// Queue structure to manage requests in FIFO order
+// Queue using linked list to manage elevator requests
 struct Queue {
-    Request* front = NULL; // Pointer to the first request
-    Request* rear = NULL;  // Pointer to the last request
+    Request* front = NULL;  // Points to front request
+    Request* rear = NULL;   // Points to last request
 
-    // Checks if the queue is empty
+    // Check if the queue is empty
     bool isEmpty() {
         return front == NULL;
     }
 
-    // Adds a new request to the end of the queue
+    // Add a request to the queue
     void enqueue(Request* r) {
         r->next = NULL;
         if (rear == NULL) {
-            // If queue is empty, set both front and rear to the new request
+            // If empty, both front and rear point to new request
             front = rear = r;
         } else {
-            // Otherwise, add to the end and update rear
+            // Add to end of list and move rear pointer
             rear->next = r;
             rear = r;
         }
     }
 
-    // Removes and returns the request at the front of the queue
+    // Remove and return the front request
     Request* dequeue() {
         if (isEmpty()) return NULL;
         Request* temp = front;
         front = front->next;
-        if (front == NULL) rear = NULL; // If queue becomes empty
+        if (front == NULL) rear = NULL; // Queue is now empty
         return temp;
     }
 };
 
-// ElevatorSystem manages requests, enforces rules, and keeps history
+// Elevator system logic
 struct ElevatorSystem {
-    Queue q;                  // Queue to store current pending requests
-    Request* history = NULL;  // Linked list to store full request history
+    Queue q;                   // Queue of pending requests
+    Request* history = NULL;   // Linked list of all past requests
 
-    // Adds a new elevator request to the system
-    void addRequest(string name, int from, int to, int hour, int minute) {
-        // Create a new request
-        Request* r = new Request{name, from, to, hour, minute, NULL};
+    // Add a new request to system
+    void addRequest(int num, int from, int to, int hour, int minute) {
+        Request* r = new Request{num, from, to, hour, minute, NULL};
 
-        // Add request to history linked list
+        // Append to history linked list
         if (history == NULL) {
             history = r;
         } else {
@@ -66,39 +65,40 @@ struct ElevatorSystem {
         q.enqueue(r);
     }
 
-    // Determines if a request is allowed based on floor-specific time rules
+    // Determine if access to the requested floor is allowed
     bool allowed(Request* r) {
-        int time = r->hour * 60 + r->minute; // Convert time to minutes
+        int time = r->hour * 60 + r->minute; // Convert time to total minutes
 
         switch (r->to) {
-            case 2: // Gym: 6:00 AM - 11:00 PM
+            case 2: // GYM: 6:00 AM – 11:00 PM
                 return time >= 360 && time <= 1380;
-            case 3: // Restaurant: breakfast/lunch/dinner time slots
-                return (time >= 360 && time <= 660) || // 6:00 - 11:00
-                       (time >= 720 && time <= 900) || // 12:00 - 15:00
-                       (time >= 1080 && time <= 1260); // 18:00 - 21:00
-            case 4: // Library: 8:00 AM - 8:00 PM
+            case 3: // Restaurant: Breakfast, Lunch, Dinner
+                return (time >= 360 && time <= 660) || 
+                       (time >= 720 && time <= 900) ||
+                       (time >= 1080 && time <= 1260);
+            case 4: // Library: 8:00 AM – 8:00 PM
                 return time >= 480 && time <= 1200;
-            case 10: // Pool: 9:00 AM - 10:00 PM
+            case 10: // Swimming Pool: 9:00 AM – 10:00 PM
                 return time >= 540 && time <= 1320;
-            // Other floors have 24/7 access
+            // All other floors are accessible 24/7
             case 1: case 5: case 6: case 7: case 8: case 9:
                 return true;
-            default:
-                return true;
+            default: // Invalid floor
+                return false;
         }
     }
 
-    // Processes all pending requests in the queue
+    // Process all requests in the queue
     void process() {
         while (!q.isEmpty()) {
             Request* r = q.dequeue();
-            // Output request info
-            cout << "\nProcessing: " << r->name << " from " << r->from
-                 << " to " << r->to << " at " << r->hour << ":"
+
+            // Show request being processed
+            cout << "\nProcessing: " << r->number << " from floor " << r->from
+                 << " to floor " << r->to << " at " << r->hour << ":"
                  << (r->minute < 10 ? "0" : "") << r->minute << endl;
 
-            // Check if access is allowed based on rules
+            // Check access rules
             if (allowed(r))
                 cout << "Access granted.\n";
             else
@@ -106,18 +106,18 @@ struct ElevatorSystem {
         }
     }
 
-    // Displays the complete history of all requests ever made
+    // Display history of all submitted requests
     void showHistory() {
         cout << "\nRequest History:\n";
         Request* temp = history;
         while (temp) {
-            cout << temp->name << " -> Floor " << temp->to << " at "
+            cout << temp->number << " -> Floor " << temp->to << " at "
                  << temp->hour << ":" << (temp->minute < 10 ? "0" : "") << temp->minute << endl;
             temp = temp->next;
         }
     }
 
-    // Displays access time rules for each special floor
+    // Display the access rules for special floors
     void showFloorRules() {
         cout << "\n--- Special Floor Access Rules ---\n";
         cout << "Lobby           Floor 1\n";
@@ -126,53 +126,54 @@ struct ElevatorSystem {
         cout << "                            12:00 PM - 3:00 PM (Lunch)\n";
         cout << "                            6:00 PM - 9:00 PM (Dinner)\n";
         cout << "Library         Floor 4     8:00 AM - 8:00 PM\n";
-        cout << "Rooms           Floor 5\n";
-        cout << "Rooms           Floor 6\n";
-        cout << "Rooms           Floor 7\n";
-        cout << "Rooms           Floor 8\n";
-        cout << "Rooms           Floor 9\n";
+        cout << "Rooms           Floor 5 - 9\n";
         cout << "Swimming Pool   Floor 10    9:00 AM - 10:00 PM\n";
         cout << "-------------------------------\n";
     }
 };
 
+// Entry point of the program
 int main() {
-    ElevatorSystem e; // Create an instance of the system
+    ElevatorSystem e;
     int choice;
 
-    e.showFloorRules(); // Display access rules before starting
+    // Show access schedule at program start
+    e.showFloorRules();
 
+    // Main menu loop
     do {
-        // Menu
         cout << "\n1. Add Request\n2. Process Requests\n3. Show History\n4. Exit\nChoice: ";
         cin >> choice;
 
         switch (choice) {
             case 1: {
-                // Gather request info from the user
-                string name;
-                int from, to, h, m;
-                cout << "Name: "; cin >> name;
+                // Gather input and create request
+                int num, from, to, h, m;
+                cout << "Number: "; cin >> num;
                 cout << "From floor: "; cin >> from;
                 cout << "To floor: "; cin >> to;
                 cout << "Hour: "; cin >> h;
                 cout << "Minute: "; cin >> m;
-                e.addRequest(name, from, to, h, m); // Add the request
+                e.addRequest(num, from, to, h, m);
                 break;
             }
             case 2:
-                e.process(); // Process all queued requests
+                // Handle and respond to requests
+                e.process(); 
                 break;
             case 3:
-                e.showHistory(); // Display full history
+                // Review all requests made
+                e.showHistory(); 
                 break;
             case 4:
-                cout << "Exiting.\n"; // Exit program
+                // Exit program
+                cout << "Exiting.\n";
                 break;
             default:
-                cout << "Invalid.\n"; // Invalid choice handling
+                // Handle invalid input
+                cout << "Invalid.\n";
         }
-    } while (choice != 4); // Continue until user chooses to exit
+    } while (choice != 4);
 
     return 0;
 }
